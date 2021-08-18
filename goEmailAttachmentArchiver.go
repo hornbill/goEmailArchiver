@@ -66,16 +66,6 @@ type xmlmcMailIDResponse struct {
 	} `xml:"params"`
 	State        stateStruct `xml:"state"`
 	MethodResult string      `xml:"status,attr"`
-	/*	Params struct {
-			SearchResultItem []struct {
-				Relevance string `xml:"relevance"`
-				Message struct {
-					MessageID string `xml:"messageId"`
-				} `xml:"message"`
-			} `xml:"searchResultItem"`
-		} `xml:"params"`
-		State stateStruct `xml:"state"`
-	*/
 }
 type structEmailResults struct {
 	MethodResult string `xml:"status,attr"`
@@ -173,7 +163,7 @@ func getAllFolders() {
 
 }
 
-func populateRequestsArray() {
+func populateEmailsArray() {
 
 	localAPIKey := globalAPIKeys[0]
 	localLink := NewEspXmlmcSession(localAPIKey)
@@ -269,7 +259,7 @@ func populateRequestsArray() {
 			logger(3, "RowResults: "+strconv.Itoa(intResponseSize), false)
 
 			for i := 0; i < intResponseSize; i++ {
-				globalArrayRequests = append(globalArrayRequests, xmlQuestionRespon.Params.RowData.Row[i].HMsgId)
+				globalArrayEmails = append(globalArrayEmails, xmlQuestionRespon.Params.RowData.Row[i].HMsgId)
 			}
 		}
 
@@ -282,123 +272,9 @@ func populateRequestsArray() {
 		}
 
 	}
-	logger(3, "Found "+strconv.Itoa(len(globalArrayRequests))+" Emails", false)
-	bar.FinishPrint("Requests Loaded \n")
+	logger(3, "Found "+strconv.Itoa(len(globalArrayEmails))+" Emails", false)
+	bar.FinishPrint("Emails Loaded \n")
 }
-
-/*
-
-func populateRequestsArray(threadId int) {
-
-	localAPIKey := globalAPIKeys[threadId]
-	localLink := NewEspXmlmcSession(localAPIKey)
-
-	localBar := globalArrayBars[threadId+1]
-
-	for {
-		boolIDExists, FolderID := pickOffMailFolder()
-
-		if !boolIDExists {
-			logger(3, "Finished Thread "+strconv.Itoa(threadId+1), false)
-			break
-		} else {
-			folderId = strconv.Itoa(FolderID)
-			logger(3, "Processing Folder: "+ folderId, false)
-
-			localLink.SetParam("application", "com.hornbill.core")
-			localLink.SetParam("queryName", "systemEmails")
-			localLink.OpenElement("queryParams")
-				localLink.SetParam("folderId", folderId)
-				localLink.SetParam("msgDateFrom", "1970-01-01 00:00:00")
-				localLink.SetParam("msgDateTo", globalCutOffDate + " 23:59:59")
-			localLink.CloseElement("queryParams")
-			localLink.OpenElement("queryOptions")
-				localLink.SetParam("queryType", "count") //h_count
-			localLink.CloseElement("queryOptions")
-
-			XMLAttachmentSearch, xmlmcErr := espXmlmc.Invoke("data", "queryExec")
-			if xmlmcErr != nil {
-				logger(6, "Unable to find Calls: "+fmt.Sprintf("%v", xmlmcErr), true)
-				break
-			}
-
-
-
-
-			localLink.SetParam("application", "com.hornbill.core")
-			localLink.SetParam("queryName", "systemEmails")
-			localLink.OpenElement("queryParams")
-				localLink.SetParam("folderId", folderId)
-				localLink.SetParam("msgDateFrom", "1970-01-01 00:00:00")
-				localLink.SetParam("msgDateTo", globalCutOffDate + " 23:59:59")
-				localLink.SetParam("rowstart", "0")
-				localLink.SetParam("limit", "10")
-			localLink.CloseElement("queryParams")
-			localLink.OpenElement("queryOptions")
-				localLink.SetParam("queryType", "records")
-			localLink.CloseElement("queryOptions")
-			localLink.OpenElement("queryOrder")
-				localLink.SetParam("column", "h_msg_id")
-				localLink.SetParam("direction", "ascending")
-			localLink.CloseElement("queryOrder")
-
-			XMLAttachmentSearch, xmlmcErr := espXmlmc.Invoke("data", "queryExec")
-			if xmlmcErr != nil {
-				logger(6, "Unable to find Calls: "+fmt.Sprintf("%v", xmlmcErr), true)
-				break
-			}
-
-			var xmlQuestionRespon xmlmcMailIDResponse
-			qerr := xml.Unmarshal([]byte(XMLAttachmentSearch), &xmlQuestionRespon)
-
-			if qerr != nil {
-				fmt.Println("No emails found")
-				fmt.Println(qerr)
-				//break
-			} else {
-				if xmlQuestionRespon.MethodResult == "fail" {
-					fmt.Println(xmlQuestionRespon.State.ErrorRet)
-					break
-				}
-				intResponseSize := len(xmlQuestionRespon.Params.SearchResultItem)
-				logger(3, "RowResults: "+strconv.Itoa(intResponseSize), false)
-
-				for i := 0; i < intResponseSize; i++ {
-					if (xmlQuestionRespon.Params.SearchResultItem[i].Relevance[0:3] == "100") {
-						globalArrayRequests = append(globalArrayRequests, xmlQuestionRespon.Params.SearchResultItem[i].Message.MessageID)
-					}
-				}
-				//###globalArrayRequests = globalArrayRequests[1:100]
-			}
-
-		}
-
-	}
-
-	localBar.Finish()
-
-	logger(3, "Found "+strconv.Itoa(len(globalArrayRequests))+" Emails", false)
-}
-
-func pickOffMailFolder() (bool, int) {
-	boolReturn := false
-	intLastItem := 0
-
-	if len(globalMailFolders) > 0 {
-		boolReturn = true
-		mutex.Lock()
-		intLastItem = globalMailFolders[len(globalMailFolders)-1]
-		globalMailFolders[len(globalMailFolders)-1] = 0
-		globalMailFolders = globalMailFolders[:len(globalMailFolders)-1]
-		mutex.Unlock()
-		globalArrayBars[0].Increment()
-	}
-	boolReturn = !(intLastItem == 0)
-	return boolReturn, intLastItem
-}
-
-
-*/
 
 func checkAPIKeys() bool {
 
@@ -432,27 +308,27 @@ func checkAPIKeys() bool {
 	return len(globalAPIKeys) > 0
 }
 
-func pickOffRequestArray() (bool, string) {
+func pickOffEmailArray() (bool, string) {
 	boolReturn := false
 	stringLastItem := ""
 
-	if len(globalArrayRequests) > 0 {
+	if len(globalArrayEmails) > 0 {
 		boolReturn = true
 		mutex.Lock()
-		stringLastItem = globalArrayRequests[len(globalArrayRequests)-1]
-		globalArrayRequests[len(globalArrayRequests)-1] = ""
-		globalArrayRequests = globalArrayRequests[:len(globalArrayRequests)-1]
+		stringLastItem = globalArrayEmails[len(globalArrayEmails)-1]
+		globalArrayEmails[len(globalArrayEmails)-1] = ""
+		globalArrayEmails = globalArrayEmails[:len(globalArrayEmails)-1]
 		mutex.Unlock()
-		//globalBarRequests.Increment()
+		//globalBarEmails.Increment()
 		globalArrayBars[0].Increment()
 	}
 	boolReturn = !(stringLastItem == "")
 	return boolReturn, stringLastItem
 }
 
-func addToProcessedArray(processedRequestID string) {
+func addToProcessedArray(processedEmailID string) {
 	mutex.Lock()
-	globalArrayProcessed = append(globalArrayProcessed, processedRequestID)
+	globalArrayProcessed = append(globalArrayProcessed, processedEmailID)
 	mutex.Unlock()
 }
 
@@ -536,20 +412,20 @@ func processCalls(threadId int) {
 	//localBar.Prefix("Thread " + strconv.Itoa(threadId) + ":")
 	//defer localBar.FinishPrint(" Completed")
 	for {
-		boolIDExists, requestID := pickOffRequestArray()
+		boolIDExists, emailID := pickOffEmailArray()
 
 		if !boolIDExists {
 			logger(3, "Finished Thread "+strconv.Itoa(threadId+1), false)
 			break
 		} else {
-			logger(3, "Processing Email: "+requestID, false)
+			logger(3, "Processing Email: "+emailID, false)
 
-			localLink.SetParam("messageId", requestID)
+			localLink.SetParam("messageId", emailID)
 			localLink.SetParam("excludeFileAttachments", "false")
 
 			XMLAttachmentSearch, xmlmcErr := localLink.Invoke("mail", "getMessage")
 			if xmlmcErr != nil {
-				logger(4, "Unable to find Email: "+requestID+" - "+fmt.Sprintf("%v", xmlmcErr), false)
+				logger(4, "Unable to find Email: "+emailID+" - "+fmt.Sprintf("%v", xmlmcErr), false)
 				continue
 			}
 
@@ -558,29 +434,24 @@ func processCalls(threadId int) {
 			qerr := xml.Unmarshal([]byte(XMLAttachmentSearch), &xmlQuestionRespon)
 
 			if qerr != nil {
-				fmt.Println("No Email Found for " + requestID)
+				fmt.Println("No Email Found for " + emailID)
 				fmt.Println(qerr)
 			} else {
 				intCountDownloads := len(xmlQuestionRespon.Params.FileAttachment)
-				/*				if intCountDownloads == 0 {
-									logger(3, "No downloads found for: "+requestID, false)
-									continue
-									//return
-								}
-				*/logger(3, strconv.Itoa(intCountDownloads)+" downloads found for: "+requestID, false)
+				logger(3, strconv.Itoa(intCountDownloads)+" downloads found for: "+emailID, false)
 
 				localBar.Finish()
 				localBar.Reset(intCountDownloads)
 
 				var downloadedFiles []string
 
-				newEmlFile, err := os.Create(globalAttachmentLocation + string(os.PathSeparator) + requestID + "_" + globalTimeNow + ".eml")
+				newEmlFile, err := os.Create(globalAttachmentLocation + string(os.PathSeparator) + emailID + "_" + globalTimeNow + ".eml")
 				if err != nil {
-					logger(4, "Unable to open .eml file for: "+requestID+" - "+fmt.Sprintf("%v", err), false)
+					logger(4, "Unable to open .eml file for: "+emailID+" - "+fmt.Sprintf("%v", err), false)
 					continue
 				}
 				strBoundary := ""
-				strBoundary = requestID + "-EmailAttachmentArchiver"
+				strBoundary = emailID + "-EmailAttachmentArchiver"
 				newEmlFile.WriteString("Received: " + xmlQuestionRespon.Params.Received + "\n")
 				newEmlFile.WriteString("Date: " + xmlQuestionRespon.Params.Sent + "\n")
 				newEmlFile.WriteString("MIME-Version: 1.0\n")
@@ -593,23 +464,7 @@ func processCalls(threadId int) {
 				newEmlFile.WriteString("\r\n\r\n")
 				newEmlFile.WriteString("--" + strBoundary + "\n")
 
-				/*
-					newEmlFile.WriteString(xmlQuestionRespon.Params.RFCHeader)
-					if (intCountDownloads > 0){
-						//need to check for boundary to use, otherwise create own boundary
-						//r := re_boundary.FindString(xmlQuestionRespon.Params.RFCHeader)
-						r := re_boundary.FindAllStringSubmatch(xmlQuestionRespon.Params.RFCHeader, 1)
-						if len(r) > 0 {
-							if len(r[0]) > 1 {
-								strBoundary = r[0][1]
-							}
-						}
-						if strBoundary == "" {
-							strBoundary = requestID + "-HornbillEmailSweeper"
-							newEmlFile.WriteString("\nContent-Type: multipart/related; boundary=\"" + strBoundary + "\"")
-						}
-					}
-				*/newEmlFile.WriteString("Content-Type: text/plain; name=\"RFCHeader.txt\"\n")
+				newEmlFile.WriteString("Content-Type: text/plain; name=\"RFCHeader.txt\"\n")
 				newEmlFile.WriteString("Content-Transfer-Encoding: 8bit;\n")
 				newEmlFile.WriteString("Content-Disposition: attachment")
 				newEmlFile.WriteString("\r\n\r\n")
@@ -716,23 +571,27 @@ func processCalls(threadId int) {
 				logger(1, "Succesful Downloads: "+fmt.Sprintf("%d", iDownloadedFiles), false)
 
 				if !(configDryRun) {
-					logger(3, "Removal of "+requestID, false)
-					//we've got the file, so now let's remove from source:
-					localLink.SetParam("mailbox", "helpdesk")
-					localLink.SetParam("messageId", requestID)
-					localLink.SetParam("purge", "true")
-					_, xmlmcErr := localLink.Invoke("mail", "deleteMessage")
-					if xmlmcErr != nil {
-						logger(4, "Unable to remove Email: "+requestID, false)
-						//need to decide what to do if unable to remove attachment - it might be because it didn't exist in the first place
+					if (iDownloadedFiles == intCountDownloads) || configForceDelete {
+						logger(3, "Removal of "+emailID, false)
+						//we've got the file, so now let's remove from source:
+						localLink.SetParam("mailbox", "helpdesk")
+						localLink.SetParam("messageId", emailID)
+						localLink.SetParam("purge", "true")
+						_, xmlmcErr := localLink.Invoke("mail", "deleteMessage")
+						if xmlmcErr != nil {
+							logger(4, "Unable to remove Email: "+emailID, false)
+							//need to decide what to do if unable to remove attachment - it might be because it didn't exist in the first place
+						} else {
+							logger(1, "Deleted: "+emailID, false)
+						}
 					} else {
-						logger(1, "Deleted: "+requestID, false)
+						logger(3, fmt.Sprintf("Skipping removal of %s; Attachment v Download Success mismatch", emailID), false)
 					}
 				} else {
-					logger(3, fmt.Sprintf("Skipping removal of %s", requestID), false)
+					logger(3, fmt.Sprintf("Skipping removal of %s", emailID), false)
 				}
 
-				addToProcessedArray(requestID)
+				addToProcessedArray(emailID)
 
 			}
 
@@ -792,74 +651,19 @@ func main() {
 	getAllFolders()
 	logger(3, "Folders Found: "+fmt.Sprintln(globalMailFolders), true)
 
-	/*
-		if len(globalMailFolders) > 0 {
+	populateEmailsArray()
 
-			globalBarRequests = pb.New(len(globalMailFolders)).Prefix("Overall :")
+	if len(globalArrayEmails) > 0 {
 
-			globalArrayBars = append(globalArrayBars, globalBarRequests)
+		//globalBarEmails = pb.StartNew(len(globalArrayEmails))
+		globalBarEmails = pb.New(len(globalArrayEmails)).Prefix("Overall :")
 
-			//pool := pb.NewPool(globalBarRequests)
-			//var pool Pool
+		globalArrayBars = append(globalArrayBars, globalBarEmails)
 
-			amount_per_bar := len(globalMailFolders) / globalMaxRoutines
-			if amount_per_bar > 0 && globalMaxRoutines > 1 {
-				logger(1, "Spawning multiple processes", false)
-
-				var wg sync.WaitGroup
-				wg.Add(globalMaxRoutines)
-
-				for i := 0; i < globalMaxRoutines; i++ {
-					ppp := pb.New(amount_per_bar).Prefix("Thread " + strconv.Itoa(i+1) + ":")
-					ppp.ShowTimeLeft = false
-					ppp.ShowCounters = false
-					ppp.ShowFinalTime = false
-					globalArrayBars = append(globalArrayBars, ppp)
-				}
-				pool, err := pb.StartPool(globalArrayBars...)
-				if err != nil {
-					panic(err)
-				}
-
-				for i := 0; i < globalMaxRoutines; i++ {
-					go func(i int) {
-						defer wg.Done()
-						populateRequestsArray(i)
-					}(i)
-				}
-				wg.Wait()
-
-				pool.Stop()
-
-		} else {
-
-			logger(1, "Just a single process", false)
-			//presumably == 0 or just a single thread, so just need a single total bar.
-			ppp := pb.New(1).Prefix("Only folder :")
-			globalArrayBars = append(globalArrayBars, ppp)
-			pool, err := pb.StartPool(globalArrayBars...)
-			if err != nil {
-				panic(err)
-			}
-			populateRequestsArray(0)
-			globalArrayBars[0].Finish()
-			pool.Stop()
-
-		}
-	*/
-	populateRequestsArray()
-
-	if len(globalArrayRequests) > 0 {
-
-		//globalBarRequests = pb.StartNew(len(globalArrayRequests))
-		globalBarRequests = pb.New(len(globalArrayRequests)).Prefix("Overall :")
-
-		globalArrayBars = append(globalArrayBars, globalBarRequests)
-
-		//pool := pb.NewPool(globalBarRequests)
+		//pool := pb.NewPool(globalBarEmails)
 		//var pool Pool
 
-		amount_per_bar := len(globalArrayRequests) / globalMaxRoutines
+		amount_per_bar := len(globalArrayEmails) / globalMaxRoutines
 		if amount_per_bar > 0 && globalMaxRoutines > 1 {
 			logger(1, "Spawning multiple processes", false)
 
@@ -889,8 +693,8 @@ func main() {
 			}
 			wg.Wait()
 
-			//globalBarRequests.FinishPrint("Utility Completed")
-			//globalBarRequests.Finish()
+			//globalBarEmails.FinishPrint("Utility Completed")
+			//globalBarEmails.Finish()
 			//globalArrayBars[0].Finish()
 			pool.Stop()
 
@@ -908,7 +712,7 @@ func main() {
 			}
 			processCalls(0)
 			globalArrayBars[0].Finish()
-			//globalBarRequests.Finish()
+			//globalBarEmails.Finish()
 			pool.Stop()
 
 		}
@@ -917,181 +721,9 @@ func main() {
 	}
 
 	//-- End output
-	//logger(3, "Requests Logged: "+fmt.Sprintf("%d", counters.created), true)
 	//-- Show Time Takens
 	endTime = time.Since(startTime)
 	logger(3, "Time Taken: "+fmt.Sprintf("%v", endTime), true)
-	logger(1, "---- Hornbill Request Attachment Download and Removal Complete ---- ", false)
+	logger(1, "---- Hornbill Email Attachment Download and Removal Complete ---- ", false)
 
 }
-
-/* test of progress bars
-func mainplaycheck() {
-	barMax := 60
-	// create bars
-	//mainBar := pb.StartNew(3 * barMax).Prefix("Main ")
-	mainBar := pb.New(3 * barMax).Prefix("Main ")
-	first := pb.New(barMax).Prefix("First ")
-	second := pb.New(barMax).Prefix("Second ")
-	third := pb.New(barMax).Prefix("Third ")
-	// start pool
-	pool, err := pb.StartPool(mainBar, first, second, third)
-	if err != nil {
-		panic(err)
-	}
-	// update bars
-	wg := new(sync.WaitGroup)
-	for _, bar := range []*pb.ProgressBar{first, second, third} {
-		wg.Add(1)
-		go func(cb *pb.ProgressBar) {
-			//cb.Total = barMax
-			for n := 0; n < barMax; n++ {
-				cb.Increment()
-				mainBar.Increment()
-				time.Sleep(time.Millisecond * time.Duration(rand.Intn(1000)))
-				//		if (rand.Intn(100) < 50) {
-				//			cb.Total = 400
-				//			if (rand.Intn(100) < 10) {
-				//				cb.Set(0)
-				//			}
-				//		}
-			}
-			cb.Finish()
-			wg.Done()
-		}(bar)
-	}
-	wg.Wait()
-
-	mainBar.Finish()
-	// close pool
-	pool.Stop()
-}
-*/
-//NOTES
-
-//[]byte(XMLSiteSearch)
-//	fmt.Println(XMLSiteSearch)
-
-/*
-
-	<methodCall service="data" method="queryExec">
-	<params>
-	<application>com.hornbill.servicemanager</application>
-	<queryName>getRequestAttachments</queryName>
-	<queryParams>
-	<requestId>IN00000014</requestId>
-	</queryParams>
-	<queryOptions>
-	<resultType>allData</resultType>
-	</queryOptions>
-	</params>
-	</methodCall>
-
-			<rowData>
-				<row>
-					<h_pk_id>3</h_pk_id>
-					<h_request_id>IN00000014</h_request_id>
-					<h_contentlocation>/cafs_raw/fs_entity/9e7ccd808d13ce4c2825f3cfcb38c444ed7118ed.data</h_contentlocation>
-					<h_filename>8_minute_world_map_gray.pdf</h_filename>
-					<h_size>6397065</h_size>
-					<h_timestamp>2019-05-15 11:21:57Z</h_timestamp>
-					<h_visibility>trustedGuest</h_visibility>
-				</row>
-
-
-	<methodCall service="data" method="entityAttachRemove">
-		<params>
-	       <application>com.hornbill.servicemanager</application>
-			<entity>Requests</entity>
-			<keyValue>IN00000014</keyValue>
-			<filePath>8_minute_world_map_gray_3.pdf</filePath>
-		</params>
-	</methodCall>
-
-		<methodCall service="data" method="entityAttachCleanup">
-	</methodCall>
-*/
-
-/*
-		// get binary to upload via WEBDAV and then set value to relative "session" URI
-		client := http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-			},
-			Timeout: time.Duration(10 * time.Second),
-		}
-
-		rel_link := "session/" + UserID
-		strDAVurl := ldapImportConf.DAVURL + rel_link
-
-		var imageB []byte
-		var Berr error
-
-			resp, err := http.Get(strFileName)
-			if err != nil {
-				logger(4, "Unable to find "+value+" ["+fmt.Sprintf("%v", http.StatusInternalServerError)+"]", false)
-				return
-			}
-			defer resp.Body.Close()
-			if resp.StatusCode == 201 || resp.StatusCode == 200 {
-				imageB, _ = ioutil.ReadAll(resp.Body)
-
-			} else {
-				logger(4, "Unsuccesful download: "+fmt.Sprintf("%v", resp.StatusCode), false)
-				return
-			}
-
-		}
-		//WebDAV upload
-		if len(imageB) > 0 {
-			putbody := bytes.NewReader(imageB)
-			req, Perr := http.NewRequest("PUT", strDAVurl, putbody)
-			req.Header.Set("Content-Type", strContentType)
-			req.Header.Add("Authorization", "ESP-APIKEY "+APIKey)
-			req.Header.Set("User-Agent", "Go-http-client/1.1")
-			response, Perr := client.Do(req)
-			if Perr != nil {
-				logger(4, "PUT connection issue: "+fmt.Sprintf("%v", http.StatusInternalServerError), false)
-				return
-			}
-			defer response.Body.Close()
-			_, _ = io.Copy(ioutil.Discard, response.Body)
-			if response.StatusCode == 201 || response.StatusCode == 200 {
-				fmt.Println("Uploaded")
-				value = "/" + rel_link
-			} else {
-				fmt.Println("Unsuccesful Upload: "+fmt.Sprintf("%v", response.StatusCode))
-				return
-			}
-		} else {
-			fmt.Println("No Image to upload")
-			return
-		}
-	}
-*/
-
-/* Re-Attach Files
-espXmlmc := apiLib.NewXmlmcInstance(strURL)
-espXmlmc.SetAPIKey(APIKey)
-
-	espXmlmc.SetParam("application", "com.hornbill.servicemanager")
-	espXmlmc.SetParam("entity", "Requests")
-	espXmlmc.SetParam("keyValue", "IN00000012")
-
-	//espXmlmc.SetParam("folder", "")
-	espXmlmc.OpenElement("localFile")
-		espXmlmc.SetParam("fileName", strFileName)
-		espXmlmc.SetParam("fileData", "dGhpcyBpcyBmdW4=")
-	espXmlmc.CloseElement("localFile")
-	//espXmlmc.SetParam("serverFile", "")
-	// espXmlmc.SetParam("overwrite", "")
-
-
-XMLSiteSearch, xmlmcErr := espXmlmc.Invoke("data", "entityAttachFile")
-if xmlmcErr != nil {
-	log.Fatal(xmlmcErr)
-	fmt.Println("Unable to associate Image to User Profile: "+fmt.Sprintf("%v", xmlmcErr))
-}
-//[]byte(XMLSiteSearch)
-fmt.Println(XMLSiteSearch)
-*/

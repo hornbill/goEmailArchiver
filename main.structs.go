@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	version              = "1.0.0"
+	version              = "1.0.1"
 	applicationName      = "Hornbill Email Attachment Archiver"
 	appName              = "goEmailAttachmentArchiver"
 	execName             = "goEmailAttachmentArchiver"
@@ -24,6 +24,7 @@ var (
 	configFileName           string
 	configDryRun             bool
 	configOverride           bool
+	configForceDelete        bool
 	configOutputFolder       string
 	configCutOff             int
 	configPageSize           = 100
@@ -53,9 +54,9 @@ var (
 	}
 
 	mutex                = &sync.Mutex{}
-	globalArrayRequests  []string
+	globalArrayEmails    []string
 	globalArrayProcessed []string
-	globalBarRequests    *pb.ProgressBar
+	globalBarEmails      *pb.ProgressBar
 	globalArrayBars      []*pb.ProgressBar
 	//globalArrayLinks     []*apiLib.XmlmcInstStruct
 )

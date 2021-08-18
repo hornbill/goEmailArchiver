@@ -53,6 +53,7 @@ func parseFlags() {
 	flag.BoolVar(&configDryRun, "dryrun", false, "Do not delete the files from the server")
 	flag.IntVar(&configCutOff, "cutoff", globalDefaultCutOff, "Set the cut off date in weeks ("+strconv.Itoa(globalUltimateCutOff)+" or greater)")
 	flag.IntVar(&configPageSize, "pagesize", 100, "Set the Query Page Size (default: 100)")
+	flag.BoolVar(&configForceDelete, "forcedelete", false, "Set this to true to force the removal of the email even though not all downloads have been received")
 	flag.BoolVar(&configOverride, "override", false, "Set this to true to override the "+strconv.Itoa(globalUltimateCutOff)+" week limit")
 	flag.Parse()
 }
@@ -61,50 +62,3 @@ func logger(t int, s string, outputToCLI bool) {
 	hornbillHelpers.Logger(t, s, outputToCLI, localLogFileName)
 }
 
-/*
-func parseDateTime(dateTime string) string {
-	layout := "2006-01-02 15:04:05"
-	t, err := time.Parse(layout, dateTime)
-	if err != nil && dateTime != "" {
-		//return first 19 chars of string
-		dateString := dateTime[0:18]
-		return dateString
-
-	}
-	return fmt.Sprintf("%s", t)
-}
-*/
-/*
-func loggerGen(t int, s string) string {
-
-	var errorLogPrefix = ""
-	//-- Create Log Entry
-	switch t {
-	case 1:
-		errorLogPrefix = "[DEBUG] "
-	case 2:
-		errorLogPrefix = "[MESSAGE] "
-	case 3:
-		errorLogPrefix = ""
-	case 4:
-		errorLogPrefix = "[ERROR] "
-	case 5:
-		errorLogPrefix = "[WARNING] "
-	case 6:
-		errorLogPrefix = ""
-	}
-	return errorLogPrefix + s + "\n\r"
-}
-*/
-/*
-func loggerWriteBuffer(s string) {
-	if s != "" {
-		logLines := strings.Split(s, "\n\r")
-		for _, line := range logLines {
-			if line != "" {
-				logger(0, line, false)
-			}
-		}
-	}
-}
-*/
