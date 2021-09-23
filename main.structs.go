@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	version              = "1.0.1"
+	version              = "1.1.0"
 	applicationName      = "Hornbill Email Attachment Archiver"
 	appName              = "goEmailAttachmentArchiver"
 	execName             = "goEmailAttachmentArchiver"
@@ -24,6 +24,7 @@ var (
 	configFileName           string
 	configDryRun             bool
 	configOverride           bool
+	configDoNotStoreLocally  bool
 	configForceDelete        bool
 	configOutputFolder       string
 	configCutOff             int
