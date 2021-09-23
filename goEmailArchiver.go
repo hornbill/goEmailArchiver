@@ -8,10 +8,7 @@ import (
 	_ "errors"
 	"fmt"
 	"github.com/cheggaaa/pb"
-<<<<<<< Updated upstream
-=======
 	"github.com/hornbill/goApiLib"
->>>>>>> Stashed changes
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -80,10 +77,7 @@ type structEmailResults struct {
 		Recipient      string `xml:"recipientName"`
 		Sender         string `xml:"senderName"`
 		Received       string `xml:"timeReceived"`
-<<<<<<< Updated upstream
-=======
 		Mailbox        string `xml:"mailbox"`
->>>>>>> Stashed changes
 		Sent           string `xml:"timeSent"`
 		RFCHeader      string `xml:"rfcHeader"`
 		FileAttachment []struct {
@@ -445,164 +439,6 @@ func processCalls(threadId int) {
 				fmt.Println("No Email Found for " + emailID)
 				fmt.Println(qerr)
 			} else {
-<<<<<<< Updated upstream
-				intCountDownloads := len(xmlQuestionRespon.Params.FileAttachment)
-				logger(3, strconv.Itoa(intCountDownloads)+" downloads found for: "+emailID, false)
-
-				localBar.Finish()
-				localBar.Reset(intCountDownloads)
-
-				var downloadedFiles []string
-
-				newEmlFile, err := os.Create(globalAttachmentLocation + string(os.PathSeparator) + emailID + "_" + globalTimeNow + ".eml")
-				if err != nil {
-					logger(4, "Unable to open .eml file for: "+emailID+" - "+fmt.Sprintf("%v", err), false)
-					continue
-				}
-				strBoundary := ""
-				strBoundary = emailID + "-EmailAttachmentArchiver"
-				newEmlFile.WriteString("Received: " + xmlQuestionRespon.Params.Received + "\n")
-				newEmlFile.WriteString("Date: " + xmlQuestionRespon.Params.Sent + "\n")
-				newEmlFile.WriteString("MIME-Version: 1.0\n")
-				newEmlFile.WriteString("Content-Type: multipart/related;\n\tboundary=\"" + strBoundary + "\"\n")
-				newEmlFile.WriteString("Subject: " + xmlQuestionRespon.Params.Subject + "\n")
-				newEmlFile.WriteString("From: " + xmlQuestionRespon.Params.Sender + "\n")
-				newEmlFile.WriteString("To: " + xmlQuestionRespon.Params.Recipient + "\n")
-				newEmlFile.WriteString("\r\n\r\n")
-				newEmlFile.WriteString("Please check the attachments for the original email header, body and attachments")
-				newEmlFile.WriteString("\r\n\r\n")
-				newEmlFile.WriteString("--" + strBoundary + "\n")
-
-				newEmlFile.WriteString("Content-Type: text/plain; name=\"RFCHeader.txt\"\n")
-				newEmlFile.WriteString("Content-Transfer-Encoding: 8bit;\n")
-				newEmlFile.WriteString("Content-Disposition: attachment")
-				newEmlFile.WriteString("\r\n\r\n")
-				newEmlFile.WriteString(xmlQuestionRespon.Params.RFCHeader)
-				newEmlFile.WriteString("\r\n\r\n")
-				newEmlFile.WriteString("--" + strBoundary + "\n")
-				newEmlFile.WriteString("Content-Type: text/plain; name=\"TEXTBody.txt\"\n") //just in case
-				newEmlFile.WriteString("Content-Transfer-Encoding: utf8;\n")
-				newEmlFile.WriteString("Content-Disposition: attachment")
-				newEmlFile.WriteString("\r\n\r\n")
-				newEmlFile.WriteString(xmlQuestionRespon.Params.Body)
-				newEmlFile.WriteString("\r\n\r\n")
-				if xmlQuestionRespon.Params.HTMLBody != "" {
-					newEmlFile.WriteString("--" + strBoundary + "\n")
-					newEmlFile.WriteString("Content-Type: text/html; name=\"HTMLBody.html\"\n") //just in case
-					newEmlFile.WriteString("Content-Transfer-Encoding: utf8;\n")
-					newEmlFile.WriteString("Content-Disposition: attachment")
-					newEmlFile.WriteString("\r\n\r\n")
-					newEmlFile.WriteString(xmlQuestionRespon.Params.HTMLBody)
-					newEmlFile.WriteString("\r\n\r\n")
-				}
-
-				for i := 0; i < intCountDownloads; i++ {
-
-					//20200910 strContentLocation := xmlQuestionRespon.Params.RowData.Row[i].HContentLocation
-					strFileName := xmlQuestionRespon.Params.FileAttachment[i].FileName
-					strMIME := xmlQuestionRespon.Params.FileAttachment[i].MIMEType
-					strAccessToken := xmlQuestionRespon.Params.FileAttachment[i].CAFSToken
-					//fmt.Println(strContentLocation)
-					var emptyCatch []byte
-
-					time.Sleep(time.Millisecond * time.Duration(rand.Intn(2000))) //think this might be necessary
-
-					strDAVurl := localLink.DavEndpoint
-					strDAVurl = strDAVurl + "secure-content/download/" + strAccessToken
-					logger(1, "GETting: "+strFileName, false)
-
-					putbody := bytes.NewReader(emptyCatch)
-					req, Perr := http.NewRequest("GET", strDAVurl, putbody)
-					if Perr != nil {
-						logger(3, "GET set-up issue", false)
-						continue
-					}
-					req.Header.Add("Authorization", "ESP-APIKEY "+localAPIKey) //APIKey)
-					req.Header.Set("User-Agent", "Go-http-client/1.1")
-					response, Perr := client.Do(req)
-					if Perr != nil {
-						logger(3, "GET connection issue: "+fmt.Sprintf("%v", http.StatusInternalServerError), false)
-						continue
-					}
-
-					//defer response.Body.Close()
-					//_, _ = io.Copy(ioutil.Discard, response.Body)
-					if response.StatusCode == 200 {
-						newEmlFile.WriteString("--" + strBoundary + "\n")
-						if strMIME == "" {
-							newEmlFile.WriteString("Content-Type: application/octet-stream; name=\"" + strFileName + "\"\r\n")
-						} else {
-							newEmlFile.WriteString("Content-Type: " + strMIME + "; name=\"" + strFileName + "\"\r\n")
-						}
-						newEmlFile.WriteString("Content-Transfer-Encoding: base64\r\n")
-						newEmlFile.WriteString("Content-Disposition: attachment\r\n\r\n")
-						body, err := ioutil.ReadAll(response.Body)
-						if err != nil {
-							logger(1, "Wrote Binary instead of base64", false)
-							_, _ = io.Copy(newEmlFile, response.Body)
-						} else {
-							base64Wrap(newEmlFile, body)
-						}
-						//						b64 := base64.NewEncoder(base64.StdEncoding, writeToEmail)
-						//						_, _ = io.Copy(newEmlFile, response.Body)
-						//_ = base64.NewEncoder(base64.StdEncoding, newEmlFile)
-						//_, _ = io.Copy(newEmlFile, response.Body)
-
-						//newEmlFile.WriteString("\r\n\r\n")
-						newEmlFile.WriteString("\r\n")
-						//will need to play with content-type headers, and 64bit and email width restrictions
-
-						// yeah do NOT use sanitized filename here!
-						downloadedFiles = append(downloadedFiles, xmlQuestionRespon.Params.FileAttachment[i].FileName)
-
-					} else {
-						logger(1, "Unsuccesful Download: "+fmt.Sprintf("%v", response.StatusCode), false)
-					}
-
-					err = response.Body.Close()
-					if err != nil {
-						logger(1, "Body Close Error: "+fmt.Sprintf("%v", err), false)
-					}
-					localBar.Increment()
-
-				}
-				if intCountDownloads > 0 {
-					newEmlFile.WriteString("--" + strBoundary + "--")
-				}
-				err = newEmlFile.Close()
-				if err != nil {
-					logger(1, "emlFile Close Error: "+fmt.Sprintf("%v", err), false)
-					downloadedFiles = nil // better ensure we are not removing anything
-				}
-
-				iDownloadedFiles := len(downloadedFiles)
-
-				logger(1, "Succesful Downloads: "+fmt.Sprintf("%d", iDownloadedFiles), false)
-
-				if !(configDryRun) {
-					if (iDownloadedFiles == intCountDownloads) || configForceDelete {
-						logger(3, "Removal of "+emailID, false)
-						//we've got the file, so now let's remove from source:
-						localLink.SetParam("mailbox", "helpdesk")
-						localLink.SetParam("messageId", emailID)
-						localLink.SetParam("purge", "true")
-						_, xmlmcErr := localLink.Invoke("mail", "deleteMessage")
-						if xmlmcErr != nil {
-							logger(4, "Unable to remove Email: "+emailID, false)
-							//need to decide what to do if unable to remove attachment - it might be because it didn't exist in the first place
-						} else {
-							logger(1, "Deleted: "+emailID, false)
-						}
-					} else {
-						logger(3, fmt.Sprintf("Skipping removal of %s; Attachment v Download Success mismatch", emailID), false)
-					}
-				} else {
-					logger(3, fmt.Sprintf("Skipping removal of %s", emailID), false)
-				}
-
-				addToProcessedArray(emailID)
-
-=======
 				iDownloadedFiles := 0
 				intCountDownloads := 0
 				if configDoNotStoreLocally {
@@ -744,7 +580,6 @@ func processCalls(threadId int) {
 				}
 
 				removeEmail(emailID, xmlQuestionRespon.Params.Mailbox, localLink, (iDownloadedFiles == intCountDownloads))
->>>>>>> Stashed changes
 			}
 
 		}
@@ -754,8 +589,6 @@ func processCalls(threadId int) {
 
 }
 
-<<<<<<< Updated upstream
-=======
 func removeEmail(emailID string, mailBox string, localLink *apiLib.XmlmcInstStruct, deleteOptional bool) {
 
 	if !(configDryRun) {
@@ -783,7 +616,6 @@ func removeEmail(emailID string, mailBox string, localLink *apiLib.XmlmcInstStru
 
 }
 
->>>>>>> Stashed changes
 func main() {
 	startTime = time.Now()
 	//-- Start Time for Log File
@@ -798,10 +630,7 @@ func main() {
 	logger(1, "---- Hornbill Email Download and Removal Utility v"+fmt.Sprintf("%v", version)+" ----", false)
 	logger(1, "Flag - Config File "+configFileName, false)
 	logger(1, "Flag - Dry Run "+fmt.Sprintf("%v", configDryRun), false)
-<<<<<<< Updated upstream
-=======
 	logger(1, "Flag - Delete Directly "+fmt.Sprintf("%v", configDoNotStoreLocally), false)
->>>>>>> Stashed changes
 
 	//-- Load Configuration File Into Struct
 	boolConfLoaded := false
