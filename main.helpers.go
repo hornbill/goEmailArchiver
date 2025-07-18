@@ -12,7 +12,7 @@ import (
 	"github.com/hornbill/goHornbillHelpers"
 )
 
-//loadConfig -- Function to Load Configruation File
+// loadConfig -- Function to Load Configruation File
 func loadConfig() (importConfStruct, bool) {
 	boolLoadConf := true
 	//-- Check Config File File Exists
@@ -46,7 +46,7 @@ func loadConfig() (importConfStruct, bool) {
 	return edbConf, boolLoadConf
 }
 
-//parseFlags - grabs and parses command line flags
+// parseFlags - grabs and parses command line flags
 func parseFlags() {
 	flag.StringVar(&configFileName, "file", "conf.json", "Name of the configuration file to load")
 	flag.StringVar(&configOutputFolder, "output", "", "Folder to store downloads in - overrides AttachmentFolder from the conf.json")
@@ -55,10 +55,10 @@ func parseFlags() {
 	flag.IntVar(&configCutOff, "cutoff", globalDefaultCutOff, "Set the cut off date in weeks ("+strconv.Itoa(globalUltimateCutOff)+" or greater)")
 	flag.IntVar(&configPageSize, "pagesize", 100, "Set the Query Page Size (default: 100)")
 	flag.BoolVar(&configOverride, "override", false, "Set this to true to override the "+strconv.Itoa(globalUltimateCutOff)+" week limit")
+	flag.BoolVar(&configForceDelete, "forcedelete", false, "Set this to true to override the attachment count check (and force removal of email)")
 	flag.Parse()
 }
 
 func logger(t int, s string, outputToCLI bool) {
 	hornbillHelpers.Logger(t, s, outputToCLI, localLogFileName)
 }
-

@@ -400,8 +400,8 @@ func base64Wrap(w io.Writer, b []byte) {
 	}
 }
 
-//func processCalls(localLink *apiLib.XmlmcInstStruct) (){
-//func processCalls(threadId int, arrayPB []*pb.ProgressBar) (){
+// func processCalls(localLink *apiLib.XmlmcInstStruct) (){
+// func processCalls(threadId int, arrayPB []*pb.ProgressBar) (){
 func processCalls(threadId int) {
 
 	localAPIKey := globalAPIKeys[threadId]
@@ -653,6 +653,13 @@ func main() {
 		logger(5, "The maximum allowed workers is between 1 and 10 (inclusive).", true)
 		logger(4, "You have included "+strconv.Itoa(globalMaxRoutines)+" API keys. Please try again, with a valid number of keys.", true)
 		return
+	}
+
+	if importConf.AttachmentDiscrepancyOverride {
+		configForceDelete = true
+	}
+	if configForceDelete {
+		logger(1, "Flag - Force Delete Override ON", false)
 	}
 
 	//Determine Cut off date.

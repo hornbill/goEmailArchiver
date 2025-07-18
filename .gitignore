@@ -1,0 +1,6 @@
+
+log/*
+release/*
+*.bak
+import*.cfg
+*.zip

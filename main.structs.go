@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	version              = "1.1.0"
+	version              = "1.1.1"
 	applicationName      = "Hornbill Email Attachment Archiver"
 	appName              = "goEmailAttachmentArchiver"
 	execName             = "goEmailAttachmentArchiver"
@@ -62,11 +62,12 @@ var (
 	//globalArrayLinks     []*apiLib.XmlmcInstStruct
 )
 
-//----- Config Data Structs
+// ----- Config Data Structs
 type importConfStruct struct {
-	InstanceID       string
-	APIKeys          []string
-	AttachmentFolder string
-	Mailboxes        []string
-	Folders          []int
+	InstanceID                    string
+	APIKeys                       []string
+	AttachmentFolder              string
+	Mailboxes                     []string
+	Folders                       []int
+	AttachmentDiscrepancyOverride bool
 }

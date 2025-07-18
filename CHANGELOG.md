@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.1.1 (July 18th, 2025)
+
+Changes:
+- Addition of "forcedelete"-flag to remove emails for which the attachment count does not tally. This can also be configured via the new boolean AttachmentDiscrepancyOverride in the configuration file (so one does not have to manipulate the command line).
+
 ## 1.1.0 (September 23rd, 2021)
 
 Changes:
