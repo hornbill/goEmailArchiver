@@ -199,15 +199,22 @@ func populateEmailsArray() {
 		logger(4, "Unable to process Count "+CountResp.State.ErrorRet, false)
 		return
 	}
-
+	var count uint64
+	var errC error
 	//-- return Count
-	count, errC := strconv.ParseUint(CountResp.Params.RowData.Row[0].Count, 10, 32)
-	//-- Check for Error
-	if errC != nil {
-		logger(4, "Unable to get Count for Count Query "+fmt.Sprintf("%s", err), false)
-		return
+	if(len(CountResp.Params.RowData.Row)==1){
+
+		count, errC = strconv.ParseUint(CountResp.Params.RowData.Row[0].Count, 10, 32)
+		//-- Check for Error
+		if errC != nil {
+			logger(4, "Unable to get Count for Count Query "+fmt.Sprintf("%s", err), false)
+			return
+		} else {
+			logger(3, "There are  "+fmt.Sprintf("%d", count)+" emails to be processed", false)
+		}
 	} else {
-		logger(3, "There are  "+fmt.Sprintf("%d", count)+" emails to be processed", false)
+		logger(4, "No results returned; likely server timeout", false)
+		return		
 	}
 
 	if count == 0 {
@@ -625,6 +632,12 @@ func main() {
 	localLogFileName += ".log"
 
 	parseFlags()
+	
+	//-- Used for Building
+	if configVersion {
+		fmt.Printf("%v \n", version)
+		return
+	}
 
 	//-- Output to CLI and Log
 	logger(1, "---- Hornbill Email Download and Removal Utility v"+fmt.Sprintf("%v", version)+" ----", false)

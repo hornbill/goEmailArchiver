@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.1.2 (February 2nd, 2026)
+
+Fixes:
+- Prevent a panicked exit when a server timeout happens on counting affected emails.
+
 ## 1.1.1 (July 18th, 2025)
 
 Changes:

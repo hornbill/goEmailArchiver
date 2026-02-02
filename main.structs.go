@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	version              = "1.1.1"
+	version              = "1.1.2"
 	applicationName      = "Hornbill Email Attachment Archiver"
 	appName              = "goEmailAttachmentArchiver"
 	execName             = "goEmailAttachmentArchiver"
@@ -23,6 +23,7 @@ var (
 	espLogFileName           = "EmailAttachmentArchiver"
 	configFileName           string
 	configDryRun             bool
+	configVersion            bool
 	configOverride           bool
 	configDoNotStoreLocally  bool
 	configForceDelete        bool
