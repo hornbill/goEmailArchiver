@@ -562,7 +562,7 @@ func processCalls(threadId int) {
 							downloadedFiles = append(downloadedFiles, xmlQuestionRespon.Params.FileAttachment[i].FileName)
 
 						} else {
-							logger(1, "Unsuccesful Download: "+fmt.Sprintf("%v", response.StatusCode), false)
+							logger(1, "Unsuccessful Download: "+fmt.Sprintf("%v", response.StatusCode), false)
 						}
 
 						err = response.Body.Close()
@@ -583,7 +583,7 @@ func processCalls(threadId int) {
 
 					iDownloadedFiles = len(downloadedFiles)
 
-					logger(1, "Succesful Downloads: "+fmt.Sprintf("%d", iDownloadedFiles), false)
+					logger(1, "Successful Downloads: "+fmt.Sprintf("%d", iDownloadedFiles), false)
 				}
 
 				removeEmail(emailID, xmlQuestionRespon.Params.Mailbox, localLink, (iDownloadedFiles == intCountDownloads))
